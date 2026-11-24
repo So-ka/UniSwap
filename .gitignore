@@ -15,6 +15,7 @@ coverage/
 # Local database files
 backend/data/*.sqlite
 backend/data/*.sqlite-*
+backend/data/uploads/
 
 # Logs and editor/OS files
 *.log

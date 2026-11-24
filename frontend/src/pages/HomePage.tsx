@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { ListingBrowser } from '../components/ListingBrowser';
 
 export function HomePage() {
   const { user } = useAuth();
@@ -54,6 +55,8 @@ export function HomePage() {
           </article>
         </div>
       </section>
+
+      <ListingBrowser />
 
       <section className="how-section" id="how-it-works">
         <div className="section-heading">

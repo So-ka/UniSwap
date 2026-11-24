@@ -1,5 +1,9 @@
 const apiOrigin = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
 
+export function resolveApiUrl(path: string): string {
+  return `${apiOrigin}${path}`;
+}
+
 interface ApiErrorPayload {
   message?: string | string[];
 }
@@ -22,7 +26,9 @@ export async function apiRequest<T>(
     ...options,
     credentials: 'include',
     headers: {
-      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(options.body && !(options.body instanceof FormData)
+        ? { 'Content-Type': 'application/json' }
+        : {}),
       ...options.headers,
     },
   });
