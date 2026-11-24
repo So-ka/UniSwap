@@ -1,5 +1,9 @@
 const apiOrigin = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
 
+export function resolveApiUrl(path: string): string {
+  return `${apiOrigin}${path}`;
+}
+
 interface ApiErrorPayload {
   message?: string | string[];
 }

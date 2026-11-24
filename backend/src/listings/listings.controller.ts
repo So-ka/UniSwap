@@ -5,6 +5,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   Req,
   Res,
   UploadedFile,
@@ -15,8 +16,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import { SessionAuthGuard } from '../auth/session-auth.guard';
 import { CreateListingDto } from './dto/create-listing.dto';
+import { ListListingsQueryDto } from './dto/list-listings-query.dto';
 import { MAX_PHOTO_BYTES } from './listing.constants';
 import {
+  ListingPage,
   ListingResponse,
   ListingsService,
   UPLOAD_DIR,
@@ -45,6 +48,11 @@ export class ListingsController {
       photo,
     );
     return { listing };
+  }
+
+  @Get()
+  list(@Query() query: ListListingsQueryDto): Promise<ListingPage> {
+    return this.listingsService.findPage(query.page, query.pageSize);
   }
 
   @Get('photos/:name')

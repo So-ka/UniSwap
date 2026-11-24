@@ -3,7 +3,7 @@ import { mkdir, unlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Listing, ListingStatus } from '../database/entities/listing.entity';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { ALLOWED_PHOTO_TYPES, MAX_PHOTO_BYTES } from './listing.constants';
@@ -25,6 +25,14 @@ export interface ListingResponse {
   exchangeFor: string | null;
   status: ListingStatus;
   createdAt: Date;
+}
+
+export interface ListingPage {
+  items: ListingResponse[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
 }
 
 export const UPLOAD_DIR = join(process.cwd(), 'data', 'uploads');
@@ -90,19 +98,7 @@ export class ListingsService {
     });
 
     try {
-      const saved = await this.listings.save(listing);
-      return {
-        id: saved.id,
-        ownerId: saved.ownerId,
-        title: saved.title,
-        description: saved.description,
-        category: saved.category,
-        photoUrl: saved.photoUrl,
-        isFree: saved.isFree,
-        exchangeFor: saved.exchangeFor,
-        status: saved.status,
-        createdAt: saved.createdAt,
-      };
+      return toListingResponse(await this.listings.save(listing));
     } catch (error: unknown) {
       if (photoName) {
         await unlink(join(UPLOAD_DIR, photoName)).catch(() => undefined);
@@ -110,4 +106,36 @@ export class ListingsService {
       throw error;
     }
   }
+
+  async findPage(page: number, pageSize: number): Promise<ListingPage> {
+    const [items, total] = await this.listings.findAndCount({
+      where: { status: Not(ListingStatus.EXCHANGED) },
+      order: { createdAt: 'DESC', id: 'DESC' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
+
+    return {
+      items: items.map(toListingResponse),
+      page,
+      pageSize,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    };
+  }
+}
+
+function toListingResponse(listing: Listing): ListingResponse {
+  return {
+    id: listing.id,
+    ownerId: listing.ownerId,
+    title: listing.title,
+    description: listing.description,
+    category: listing.category,
+    photoUrl: listing.photoUrl,
+    isFree: listing.isFree,
+    exchangeFor: listing.exchangeFor,
+    status: listing.status,
+    createdAt: listing.createdAt,
+  };
 }
