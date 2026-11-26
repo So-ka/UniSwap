@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { apiRequest, resolveApiUrl } from '../api/client';
 
 interface Listing {
@@ -75,7 +76,12 @@ export function ListingBrowser() {
       {data && data.items.length > 0 && (
         <div className="feature-grid">
           {data.items.map((listing) => (
-            <article className="feature-card" key={listing.id}>
+            <Link
+              className="feature-card listing-card-link"
+              key={listing.id}
+              to={`/listings/${listing.id}`}
+              aria-label={`View ${listing.title}`}
+            >
               {listing.photoUrl ? (
                 <img
                   src={resolveApiUrl(listing.photoUrl)}
@@ -99,7 +105,7 @@ export function ListingBrowser() {
                   ? 'Free'
                   : `Exchange for: ${listing.exchangeFor ?? '—'}`}
               </p>
-            </article>
+            </Link>
           ))}
         </div>
       )}

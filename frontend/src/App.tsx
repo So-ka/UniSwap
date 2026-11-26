@@ -3,6 +3,7 @@ import { ProtectedRoute } from './auth/ProtectedRoute';
 import { Layout } from './components/Layout';
 import { CreateListingPage } from './pages/CreateListingPage';
 import { HomePage } from './pages/HomePage';
+import { ListingDetailPage } from './pages/ListingDetailPage';
 import { LoginPage } from './pages/LoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -14,6 +15,7 @@ export function App() {
         <Route index element={<HomePage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="login" element={<LoginPage />} />
+        <Route path="listings/:id" element={<ListingDetailPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="listings/new" element={<CreateListingPage />} />
         </Route>

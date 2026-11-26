@@ -1,7 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir, unlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { Listing, ListingStatus } from '../database/entities/listing.entity';
@@ -25,6 +29,10 @@ export interface ListingResponse {
   exchangeFor: string | null;
   status: ListingStatus;
   createdAt: Date;
+}
+
+export interface ListingDetailResponse extends ListingResponse {
+  ownerName: string;
 }
 
 export interface ListingPage {
@@ -107,6 +115,19 @@ export class ListingsService {
     }
   }
 
+  async findOne(id: string): Promise<ListingDetailResponse> {
+    const listing = await this.listings.findOne({
+      where: { id },
+      relations: { owner: true },
+    });
+
+    if (!listing) {
+      throw new NotFoundException('Listing not found.');
+    }
+
+    return toListingDetailResponse(listing);
+  }
+
   async findPage(page: number, pageSize: number): Promise<ListingPage> {
     const [items, total] = await this.listings.findAndCount({
       where: { status: Not(ListingStatus.EXCHANGED) },
@@ -123,6 +144,15 @@ export class ListingsService {
       totalPages: Math.max(1, Math.ceil(total / pageSize)),
     };
   }
+}
+
+function toListingDetailResponse(
+  listing: Listing,
+): ListingDetailResponse {
+  return {
+    ...toListingResponse(listing),
+    ownerName: listing.owner.name,
+  };
 }
 
 function toListingResponse(listing: Listing): ListingResponse {
