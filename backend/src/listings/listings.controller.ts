@@ -19,6 +19,7 @@ import { CreateListingDto } from './dto/create-listing.dto';
 import { ListListingsQueryDto } from './dto/list-listings-query.dto';
 import { MAX_PHOTO_BYTES } from './listing.constants';
 import {
+  ListingDetailResponse,
   ListingPage,
   ListingResponse,
   ListingsService,
@@ -67,5 +68,12 @@ export class ListingsController {
         response.status(404).json({ message: 'Photo not found.' });
       }
     });
+  }
+
+  @Get(':id')
+  async findOne(
+    @Param('id') id: string,
+  ): Promise<{ listing: ListingDetailResponse }> {
+    return { listing: await this.listingsService.findOne(id) };
   }
 }
